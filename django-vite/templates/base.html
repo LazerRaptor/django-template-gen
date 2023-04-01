@@ -1,0 +1,28 @@
+{% load static %}
+{% load django_vite %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dracula">
+  <head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    {% vite_hmr_client %}
+    {% vite_asset 'index.js' %}
+
+    <link rel="shortcut icon" type="svg" href="{% static 'img/brand.svg' %}"/>
+    <!-- leader-line.js (draw svg lines to connect nodes) -->
+    <link rel="stylesheet" href="{% static 'dist/style.css' %}">
+
+    <title>{% block title %}Welcome!{% endblock %}</title>
+  </head>
+  <body>
+    {% block style  %}
+    {% endblock %}
+    {% block content %}
+    {% endblock %}
+    {% block javascript %}
+    {% endblock %}
+  </body>
+</html>

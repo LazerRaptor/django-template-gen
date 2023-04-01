@@ -1,0 +1,20 @@
+{
+  "name": "django-vite",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "tailwind": "npx tailwindcss -i ./static/src/style.css -o ./static/dist/style.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "vite": "^4.2.1"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.1"
+  }
+}

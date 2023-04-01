@@ -1,0 +1,16 @@
+Django
+django-allauth
+django-cors-headers
+django-htmx
+django-vite
+django-ninja
+django-web-components
+slippers
+
+# Optional 
+pip-tools
+django_debug_toolbar
+autopep8
+flake8
+pytest-django
+django-extensions
