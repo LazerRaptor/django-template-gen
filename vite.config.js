@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import createTemplate from './static/lib/createTemplate.mjs'
 
 export default defineConfig({
-  plugins: [],
+  plugins: [createTemplate({ templateDir: './django-vite/templates' })],
   root: resolve('./static/src'),
   base: '/static/',
   server: {
@@ -15,7 +16,7 @@ export default defineConfig({
     },
   },
   resolve: {
-    extensions: ['.js', 'ts', '.json'],
+    extensions: ['.js', 'ts', '.json', 'mjs', 'css'],
   },
   build: {
     outDir: resolve('./static/dist'),
@@ -31,5 +32,9 @@ export default defineConfig({
         chunkFileNames: undefined,
       },
     },
+  },
+  test: {
+    name: 'test',
+    root: './static/tests',
   },
 });

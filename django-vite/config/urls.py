@@ -15,9 +15,35 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from django.views.generic.base import TemplateView
+from django.template.response import TemplateResponse
+from django.contrib.auth import get_user_model
+from ninja import NinjaAPI, Schema
+from typing import List
+
+
+api = NinjaAPI()
+
+
+class UserSchema(Schema):
+    username: str
+    first_name: str
+    last_name: str
+    email: str
+
+
+class ContextSchema(Schema):
+    users: List[UserSchema]
+
+
+@api.get("/")
+def homepage(request):
+    context = ContextSchema(
+        users=list(get_user_model().objects.all())
+    ).json()
+    return TemplateResponse(request, "homepage.html", context={"context": context})
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", TemplateView.as_view(template_name="homepage.html")),
+    path("", api.urls),
 ]

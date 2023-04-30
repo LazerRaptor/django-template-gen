@@ -1,4 +1,7 @@
 __pycache__/
 venv
 node_modules
+static/dist
+django-vite/db.sqlite3
 .env
+pnpm-lock.yaml

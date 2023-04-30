@@ -14,3 +14,4 @@ autopep8
 flake8
 pytest-django
 django-extensions
+python-decouple

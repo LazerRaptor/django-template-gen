@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
-{% block content %}
-  <h1>Hello from Django!</h1>
-{% endblock %}
+{% extends "base.html" %}
+          {% block content %}
+          <div x-data="homepage({{ context }})" class="prose w-2/3 mx-auto"><h1>Welcome to my website!</h1><p>See the list of all our users:</p><ul><template x-for="user in users"><li x-text="user.email"></li></template></ul><button @click="onClick" class="px-4 py-2 bg-blue-600 text-white">Click me!</button></div>
+          {% endblock %}
