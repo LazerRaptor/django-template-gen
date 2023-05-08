@@ -75,3 +75,5 @@ export default function h(name, attrs) {
 	sanitized[s] = true;
 	return s;
 }
+
+export const div = (attrs) => h('div', attrs);

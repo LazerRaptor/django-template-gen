@@ -1,10 +1,10 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
-import createTemplate from './static/lib/createTemplate.mjs'
+import { generateTemplate } from './static/lib';
 
 export default defineConfig({
-  plugins: [createTemplate({ templateDir: './django-vite/templates' })],
-  root: resolve('./static/src'),
+  plugins: [generateTemplate()],
+  root: resolve('./static'),
   base: '/static/',
   server: {
     host: 'localhost',
@@ -16,7 +16,7 @@ export default defineConfig({
     },
   },
   resolve: {
-    extensions: ['.js', 'ts', '.json', 'mjs', 'css'],
+    extensions: ['.js', '.json', 'mjs', 'css'],
   },
   build: {
     outDir: resolve('./static/dist'),

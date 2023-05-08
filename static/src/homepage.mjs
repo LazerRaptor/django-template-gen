@@ -1,4 +1,4 @@
-import h from 'vhtml';
+import h from 'vhtml'
 
 export default (context) => ({
   init() {
@@ -18,6 +18,7 @@ export default (context) => ({
           ]),
         ]),
 
+        h('h1', {}, 'Man...'),
         h('button', {'@click': 'onClick', 'class': 'px-4 py-2 bg-blue-600 text-white'}, 'Click me!'),
       ])
     )

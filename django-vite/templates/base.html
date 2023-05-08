@@ -1,7 +1,7 @@
 {% load static %}
 {% load django_vite %}
 <!DOCTYPE html>
-<html lang="en" data-theme="dracula">
+<html lang="en">
   <head>
     <title></title>
     <meta charset="UTF-8">
@@ -9,19 +9,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
     {% vite_hmr_client %}
-    {% vite_asset 'index.js' %}
+    {% vite_asset 'src/index.js' %}
 
-    <link rel="shortcut icon" type="svg" href="{% static 'img/brand.svg' %}"/>
     <link rel="stylesheet" href="{% static 'dist/style.css' %}">
-
-    <title>{% block title %}Welcome!{% endblock %}</title>
   </head>
   <body>
-    {% block style  %}
-    {% endblock %}
     {% block content %}
-    {% endblock %}
-    {% block javascript %}
     {% endblock %}
   </body>
 </html>
