@@ -1,6 +1,0 @@
-
-          {% extends base.html %}
-          {% block content %}
-          <div x-data="homepage" class="prose"><h1>Django + Vite + Alpine.js template</h1><p>This text is generated from hyperscript!</p><p class="text-blue">Its so awesome!</p></div>
-          {% endblock %}
-        
