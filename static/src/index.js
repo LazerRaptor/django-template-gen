@@ -1,12 +1,12 @@
-import Alpine from "alpinejs";
+import h from '../lib/vhtml';
+import Homepage from './pages/homepage';
+import App from '../lib/app';
 
-import Homepage from './homepage.mjs';
+globalThis.h = h;
 
-window.Alpine = Alpine;
+const app = App();
 
-Alpine.register = (compName, component) => {
-  return Alpine.data(compName, component);
-};
+app.add('homepage', Homepage)
+app.start()
 
-Alpine.register("homepage", Homepage);
-Alpine.start();
+export default App;

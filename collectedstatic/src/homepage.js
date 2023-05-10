@@ -1,4 +1,4 @@
-import h from 'vhtml'
+import h from '../lib/vhtml';
 
 export default (context) => ({
   init() {
