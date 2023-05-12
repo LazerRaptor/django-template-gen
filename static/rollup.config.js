@@ -8,8 +8,6 @@ export default defineConfig({
     file: 'dist/bundle.js',
     format: 'iife',
     name: 'MyBundle',
-    globals: {'alpinejs': 'Alpine'}
   },
-  plugins: [generateTemplate(), resolve({ moduleDirectories: ['node_modules']})],
-  external: ['alpinejs'],
+  plugins: [generateTemplate(), resolve()],
 })

@@ -1,6 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 import h from './vhtml.js'
+import NodeCache from 'node-cache';
+
+const storage = new NodeCache()
 
 globalThis.h = h;
 
@@ -11,6 +14,7 @@ function inComponents(moduleInfo) {
   )
 }
 
+
 function inPages(moduleInfo) {
   return (
     moduleInfo.id.includes('src/pages')
@@ -18,14 +22,6 @@ function inPages(moduleInfo) {
   )
 }
 
-/** Determines if a node is a component */ 
-function isComponent(node) {
-  return (
-    (node.type === 'ExportDefaultDeclaration')
-    // || node.type === 'VariableDeclaration'
-    // || node.type === 'FunctionDeclaration'
-  )
-}
 
 const filter = (nodes, lookup) => {
   const filtered = nodes.filter(lookup)
@@ -144,48 +140,76 @@ function evaluateSource(chunk) {
 }
 
 
-function finalizeResult(html, moduleId) {
-  const filename = getFilenameFromPath(moduleId)
-  return `{% extends 'base.html' %}{% block content %}<div x-data="${filename}({{ context }})">${html}</div>{% endblock %}`
+function createDjangoTemplate(filename) {
+ return `{% extends 'base.html' %}{% block content %}<div x-data="${filename}({{ context }})"><-- INJECT_CONTENT --></div>{% endblock %}`
 }
 
+
+function finalizeResult(html, moduleId) {
+  const filename = getFilenameFromPath(moduleId)
+  const template = createDjangoTemplate(filename);
+  return template.replace('<-- INJECT_CONTENT -->', html)
+}
+
+
+class Chunk {
+  template = 'const ret = __PAGE__\n return ret'
+
+  constructor(moduleIds) {
+    this.moduleIds = moduleIds;
+    for (let id of moduleIds) {
+      this.template = `${id}\n` + this.template 
+    }
+    storage.set('moduleIds', moduleIds);
+  }
+
+  add(id, type, source) {
+    storage.set(id, { type, source })
+  }
+
+  render() {
+    const moduleIds = storage.get('moduleIds');
+    for (let id of moduleIds) {
+      const { type, source } = storage.get(id) 
+      if (type === 'page') {
+        this.template = this.template.replace('__PAGE__', source);
+        this.template = this.template.replace(id, '')
+      }
+      if (type === 'component') {
+        this.template = this.template.replace(id, source);
+      }
+    }
+    return this.template
+  }
+}
 
 export default function(outputDir = '../django-vite/templates') {
   let importedIds = [],
       pageId = '',
-      chunk = null,
-      parsed = false
+      chunk = null
+  
   return {
     name: 'generate-template',
     moduleParsed(moduleInfo) {
-      // pages are parsed before components unless components are imported into
-      // the entry file (which shouldn't happen).
       if (inPages(moduleInfo)) {
         const source = parsePage(moduleInfo)
-        chunk = `
-        const ret = ${source}
-        return ret
-        `
-        importedIds = moduleInfo.importedIds
         pageId = moduleInfo.id
+        importedIds = [pageId, ...moduleInfo.importedIds]
+        chunk = new Chunk(importedIds)
+        chunk.add(pageId, 'page', source)
       }
       if (inComponents(moduleInfo)) {
         if (importedIds.includes(moduleInfo.id)) {
           const source = parseComponent(moduleInfo)
-          chunk = `
-          ${source}
-          ${chunk}
-          `
-          importedIds = importedIds.filter(id => id !== moduleInfo.id)
-          if (importedIds.length === 0) parsed = true
+          chunk.add(moduleInfo.id, 'component', source)
         }
       }
-      if (parsed) {
-        const path = createPath(pageId, outputDir);
-        let html = evaluateSource(chunk)
-        html = finalizeResult(html, pageId)
-        fs.writeFileSync(path, html);
-      }
     },
+    outro() {
+      const path = createPath(pageId, outputDir);
+      let html = evaluateSource(chunk.render());
+      html = finalizeResult(html, pageId)
+      fs.writeFileSync(path, html);
+    }
   } 
 } 

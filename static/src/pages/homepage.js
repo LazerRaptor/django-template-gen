@@ -1,18 +1,19 @@
 import Button from '../components/button';
 
 export default (context) => ({
+  text:'foobar',
   init() {
-    this.users = context.users
+    console.log(context)
   },
   onClick() {
-    console.log("clicked");
+    this.text = 'Clicked!'
   },
   render() {
     return (
-      h('div', null, [
-        h('h1', {}, 'Hey Mr. Panda bear,'),
-        h('p', {}, 'We dont take kindly to your types around here!'),
-        Button()
+      h('div', {class: 'container mx-auto prose'}, [
+        h('h1', null, 'Hello there, stranger!'),
+        h('p', null, 'Anyway, how is your sex life?'),
+        Button({ text: this.text, onClick: "onClick()"})
       ])
     )
   }
