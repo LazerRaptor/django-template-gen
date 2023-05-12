@@ -2,6 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import h from './vhtml.js'
 
+globalThis.h = h;
+
 function inComponents(moduleInfo) {
   return (
     moduleInfo.id.includes('src/components')
@@ -46,7 +48,47 @@ const action = (node, lookup) => {
   }
 }
 
-const graph = {
+function walk(node, graph) {
+  const path = graph[node.type]
+  if (!path) return node
+  for (let lookup of path) {
+    node = action(node, lookup)
+  }
+  return walk(node, graph)
+}
+
+
+export function evenBrackets(str) {
+  const pairs = {
+    '{': '}',
+    '(': ')'
+  }
+  const stack = [];
+  let ret = '';
+
+  for (let ch of str) {
+    if (['}', '{', ')', '('].includes(ch)) {
+      if (ch === '{' || ch === '(') {
+        stack.push(ch)
+      } else {
+        if (stack.length === 0) break;
+        stack.pop();
+      }
+    }
+    ret += ch
+  }
+
+  // append missing
+  if (stack.length !== 0) {
+    for (let ch of stack) {
+      ret += pairs[ch]
+    }
+  }
+  return ret
+}
+
+
+const pageGraph = {
   'ExportDefaultDeclaration': ['declaration'],
   'ArrowFunctionExpression': ['body'],
   'FunctionDeclaration': ['body', 'body', (node) => node.type === 'ReturnStatement'],
@@ -55,95 +97,94 @@ const graph = {
   'ReturnStatement': ['argument'],
 }
 
-function walk(node) {
-  const path = graph[node.type]
-  if (!path) return node
-  for (let lookup of path) {
-    node = action(node, lookup)
-  }
-  return walk(node)
+
+function getFilenameFromPath(path) {
+  const parts = path.split('/')
+  return parts[parts.length - 1].split('.')[0]
 }
 
-function evenBrackets(str) {
-  const brackets = [];
-  const braces = [];
-  let trimAt;
-  let i = 0;
-  for (let ch of str) {
-    if (ch === '(') {
-      brackets.push(ch)
-    }
-
-    if (ch === ')') {
-      if (brackets.length > 0) {
-        brackets.pop();
-      } else {
-        trimAt = i;
-        break
-      }
-    }
-
-    if (ch === '{') {
-      braces.push(ch)
-    }
-
-    if (ch === '}') {
-      if (brackets.length > 0) {
-        braces.pop();
-      } else {
-        trimAt = i;
-        break
-      }
-    }
-    i++;
-  }
-  return str.substr(0, trimAt)
-}
-
-function getHyperscript(node, code) {
-  if (isComponent(node)) {
-    const targetNode = walk(node)
-    const { start, end } = targetNode
-    return evenBrackets(code.substr(start, end))
-  }
-}
-
-function transformHyperscript(hyperscript) {
-  const code = `
-    const ret = ${hyperscript};
-    return ret;
-  `;
-  const fn = new Function('h', code)
-  return fn(h)
-}
 
 function createPath(moduleId, templateDir) {
-  const parts = moduleId.split('pages')
-  const filepath = parts[parts.length - 1].replace('.js', '')
-  return path.join(templateDir, filepath) + '.html'
+  const filename = getFilenameFromPath(moduleId)
+  return path.join(templateDir, filename) + '.html'
 }
 
-function getVhtml(moduleInfo) {
-  if (moduleInfo.id.includes('vhtml.js')) {
-    return moduleInfo.code.replaceAll('export default ', '') 
+
+const componentGraph = {
+  'ExportDefaultDeclaration': ['declaration'],
+  'ArrowFunctionExpression': ['body'],
+  'FunctionDeclaration': ['body', 'body'],
+}
+
+
+function parseComponent(moduleInfo) {
+  for (const node of moduleInfo.ast.body) {
+    if (node.type === 'ExportDefaultDeclaration') {
+      const targetNode = walk(node, componentGraph)
+      const { start, end } = targetNode;
+      const code = evenBrackets(moduleInfo.code.substr(start, end))
+      return code.replace('export default ', '')
+    }
+  } 
+}
+
+
+function parsePage(moduleInfo) {
+  for (const node of moduleInfo.ast.body) {
+    if (node.type === 'ExportDefaultDeclaration') {
+      const targetNode = walk(node, pageGraph);
+      const { start, end } = targetNode;
+      return evenBrackets(moduleInfo.code.substr(start, end))
+    }
   }
 }
 
-export default function(templateDir = '../django-vite/templates') {
-  let vhtml;
+function evaluateSource(chunk) {
+  return (new Function(chunk))()
+}
+
+
+function finalizeResult(html, moduleId) {
+  const filename = getFilenameFromPath(moduleId)
+  return `{% extends 'base.html' %}{% block content %}<div x-data="${filename}({{ context }})">${html}</div>{% endblock %}`
+}
+
+
+export default function(outputDir = '../django-vite/templates') {
+  let importedIds = [],
+      pageId = '',
+      chunk = null,
+      parsed = false
   return {
     name: 'generate-template',
     moduleParsed(moduleInfo) {
-      vhtml ||= getVhtml(moduleInfo)
-      if (inComponents(moduleInfo) || inPages(moduleInfo)) {
-        for (const node of moduleInfo.ast.body) {
-          const code = getHyperscript(node, moduleInfo.code)
-          if (code && inPages(moduleInfo)) {
-            const html = transformHyperscript(code)
-            const path = createPath(moduleInfo.id, templateDir)
-            console.log(html)
-          }
+      // pages are parsed before components unless components are imported into
+      // the entry file (which shouldn't happen).
+      if (inPages(moduleInfo)) {
+        const source = parsePage(moduleInfo)
+        chunk = `
+        const ret = ${source}
+        return ret
+        `
+        importedIds = moduleInfo.importedIds
+        pageId = moduleInfo.id
+      }
+      if (inComponents(moduleInfo)) {
+        if (importedIds.includes(moduleInfo.id)) {
+          const source = parseComponent(moduleInfo)
+          chunk = `
+          ${source}
+          ${chunk}
+          `
+          importedIds = importedIds.filter(id => id !== moduleInfo.id)
+          if (importedIds.length === 0) parsed = true
         }
+      }
+      if (parsed) {
+        const path = createPath(pageId, outputDir);
+        let html = evaluateSource(chunk)
+        html = finalizeResult(html, pageId)
+        fs.writeFileSync(path, html);
       }
     },
   } 
