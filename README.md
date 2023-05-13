@@ -2,7 +2,7 @@
 
 Create Django template files in a node.js environment.
 
-![image](https://github.com/LazerRaptor/django-template-gen/assets/45490518/ac393739-6bc8-4be0-b81b-3ad817dd0adb)
+![image](https://github.com/LazerRaptor/django-template-gen/assets/45490518/081b113d-e971-4fbe-b479-47824ee34079)
 
 ### Installation
 1. Clone the repo: `git clone https://github.com/LazerRaptor/django-template-gen.git` 
