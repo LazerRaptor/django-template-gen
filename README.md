@@ -2,7 +2,11 @@
 
 Create Django template files in a node.js environment.
 
+Create a homepage.js file in the src/pages/ directory and a button.js file in the src/components directory:
 ![image](https://github.com/LazerRaptor/django-template-gen/assets/45490518/f52ff9dd-4d97-4f63-9a85-54001cc3aba9)
+
+This is what you'll see in the browser:
+![image](https://github.com/LazerRaptor/django-template-gen/assets/45490518/413b723a-fce0-47d1-8af4-440fda2969e1)
 
 | :exclamation:  This is work in progress and not suitable for use in real projects  |
 |------------------------------------------------------------------------------------|
