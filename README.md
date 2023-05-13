@@ -2,7 +2,7 @@
 
 Create Django template files in a node.js environment.
 
-![image](https://github.com/LazerRaptor/django-template-gen/assets/45490518/349219cc-60f3-4a13-98ba-d81a6ef7105a)
+![image](https://github.com/LazerRaptor/django-template-gen/assets/45490518/f52ff9dd-4d97-4f63-9a85-54001cc3aba9)
 
 | :exclamation:  This is work in progress and not suitable for use in real projects  |
 |------------------------------------------------------------------------------------|
