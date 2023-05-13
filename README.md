@@ -6,6 +6,7 @@ Create a `homepage.js` file in the `src/pages/` directory and a `button.js` file
 ![image](https://github.com/LazerRaptor/django-template-gen/assets/45490518/f52ff9dd-4d97-4f63-9a85-54001cc3aba9)
 
 Running `pnpm dev` will create a js bundle and a Django template called `homepage.html` in your `TEMPLATE_DIR`.
+The template's context will be exposed to the component in your `homepage.js` file (as you can see in the console below).
 
 This is what you'll see in the browser:
 ![image](https://github.com/LazerRaptor/django-template-gen/assets/45490518/4b7dab0a-9202-430d-b82b-590f2d9d28de)
