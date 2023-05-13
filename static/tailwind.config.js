@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['../django-vite/templates/**/*.{html,js}'],
+  content: ['../django-example/templates/**/*.{html,js}'],
   theme: {
     extend: {},
   },

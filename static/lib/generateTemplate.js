@@ -183,7 +183,7 @@ class Chunk {
   }
 }
 
-export default function(outputDir = '../django-vite/templates') {
+export default function(outputDir = '../django-example/templates') {
   let importedIds = [],
       pageId = '',
       chunk = null
