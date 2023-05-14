@@ -9,5 +9,5 @@ export default defineConfig({
     format: 'iife',
     name: 'MyBundle',
   },
-  plugins: [generateTemplate(), resolve()],
+  plugins: [generateTemplate({ outputDir: '../django-example/templates' }), resolve()],
 })

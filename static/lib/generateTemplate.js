@@ -7,22 +7,6 @@ const storage = new NodeCache()
 
 globalThis.h = h;
 
-function inComponents(moduleInfo) {
-  return (
-    moduleInfo.id.includes('src/components')
-    && moduleInfo.hasDefaultExport
-  )
-}
-
-
-function inPages(moduleInfo) {
-  return (
-    moduleInfo.id.includes('src/pages')
-    && moduleInfo.hasDefaultExport
-  )
-}
-
-
 const filter = (nodes, lookup) => {
   const filtered = nodes.filter(lookup)
   if (filtered.length === 1) {
@@ -135,10 +119,6 @@ function parsePage(moduleInfo) {
   }
 }
 
-function evaluateSource(chunk) {
-  return (new Function(chunk))()
-}
-
 
 function createDjangoTemplate(filename) {
  return `{% extends 'base.html' %}{% block content %}<div x-data="${filename}({{ context }})"><-- INJECT_CONTENT --></div>{% endblock %}`
@@ -156,7 +136,6 @@ class Chunk {
   template = 'const ret = __PAGE__\n return ret'
 
   constructor(moduleIds) {
-    this.moduleIds = moduleIds;
     for (let id of moduleIds) {
       this.template = `${id}\n` + this.template 
     }
@@ -183,7 +162,8 @@ class Chunk {
   }
 }
 
-export default function(outputDir = '../django-example/templates') {
+
+export default function({ outputDir }) {
   let importedIds = [],
       pageId = '',
       chunk = null
@@ -191,15 +171,15 @@ export default function(outputDir = '../django-example/templates') {
   return {
     name: 'generate-template',
     moduleParsed(moduleInfo) {
-      if (inPages(moduleInfo)) {
+      if (moduleInfo.id.includes('src/pages/')) {
         const source = parsePage(moduleInfo)
         pageId = moduleInfo.id
         importedIds = [pageId, ...moduleInfo.importedIds]
         chunk = new Chunk(importedIds)
         chunk.add(pageId, 'page', source)
       }
-      if (inComponents(moduleInfo)) {
-        if (importedIds.includes(moduleInfo.id)) {
+      if (moduleInfo.id.includes('src/components/')) {
+        if (importedIds.includes(moduleInfo.id) && chunk) {
           const source = parseComponent(moduleInfo)
           chunk.add(moduleInfo.id, 'component', source)
         }
@@ -207,7 +187,7 @@ export default function(outputDir = '../django-example/templates') {
     },
     outro() {
       const path = createPath(pageId, outputDir);
-      let html = evaluateSource(chunk.render());
+      let html = (new Function(chunk.render()))();
       html = finalizeResult(html, pageId)
       fs.writeFileSync(path, html);
     }

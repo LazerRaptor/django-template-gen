@@ -14,8 +14,8 @@ export default (context) => ({
   render() {
     return (
       h('div', { class: 'container mx-auto prose' }, [
-        h('h1', null, 'Hello there, stranger!'),
-        h('p', null, 'Anyway, how is your sex life?'),
+        h('h1', null, 'This is a headline!'),
+        h('p', null, 'This is a paragraph'),
         Button({ text: 'text', onClick: 'onClick()'})
       ])
     )

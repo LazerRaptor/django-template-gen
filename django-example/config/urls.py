@@ -35,12 +35,22 @@ class ContextSchema(Schema):
     users: List[UserSchema]
 
 
+class AboutContextSchema(Schema):
+    content: str
+
+
 @api.get("/")
 def homepage(request):
     context = ContextSchema(
         users=list(get_user_model().objects.all())
     ).json()
     return TemplateResponse(request, "homepage.html", context={"context": context})
+
+
+@api.get("/about")
+def about(request):
+    context = AboutContextSchema(content="Welcome to About page.").json()
+    return TemplateResponse(request, "about.html", context={"context": context})
 
 
 urlpatterns = [
